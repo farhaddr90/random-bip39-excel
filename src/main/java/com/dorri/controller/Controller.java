@@ -1,6 +1,7 @@
 package com.dorri.controller;
 
 import com.dorri.model.Bip39Model;
+import com.dorri.model.Result;
 import com.dorri.view.View;
 
 import java.awt.event.ActionEvent;
@@ -17,21 +18,28 @@ public class Controller implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getActionCommand().equals(View.CREATE)) {
 
-            int sheets = view.getSheets();
-            int rows = view.getRows();
-            int cols = view.getCols();
+        try {
+            if (e.getActionCommand().equals(View.CREATE)) {
 
-            if (sheets <= 0 || rows <= 0 || cols <= 0) {
-                throw new NumberFormatException();
+                int sheets = view.getSheets();
+                int rows = view.getRows();
+                int cols = view.getCols();
+
+                String filePath = view.getSelectedFilePath();
+
+                model.generateExcel(
+                        sheets,
+                        rows,
+                        cols,
+                        filePath
+                );
             }
 
-            model.generateExcel(
-                    view.getSheets(),
-                    view.getRows(),
-                    view.getCols()
-            );
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            model.setResult(new Result(null, false, ex.getMessage()));
+            model.notifyObservers();
         }
     }
 }

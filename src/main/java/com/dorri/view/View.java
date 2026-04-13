@@ -3,6 +3,7 @@ package com.dorri.view;
 import com.dorri.controller.Controller;
 import com.dorri.model.Bip39Model;
 import com.dorri.model.Observer;
+import com.dorri.model.Result;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,6 +21,8 @@ public class View extends JPanel implements Observer {
     private JTextArea resultArea;
     private JButton createButton;
 
+    private String selectedFilePath;
+
     public View(Bip39Model model) {
         createUI();
         this.model = model;
@@ -32,7 +35,6 @@ public class View extends JPanel implements Observer {
             createButton.removeActionListener(this.controller);
         }
         this.controller = controller;
-        this.createButton.addActionListener(this.controller);
     }
 
     protected Controller makeController() {
@@ -70,8 +72,31 @@ public class View extends JPanel implements Observer {
         topPanel.add(inputPanel, BorderLayout.CENTER);
         topPanel.add(createButton, BorderLayout.SOUTH);
 
+        this.createButton.addActionListener(e -> {
+            if (!askFileLocation()) {
+                resultArea.setText("⚠️ Cancelled");
+                return;
+            }
+            controller.actionPerformed(e);
+        });
+
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
+    }
+
+    private boolean askFileLocation() {
+        JFileChooser chooser = new JFileChooser();
+        int res = chooser.showSaveDialog(this);
+
+        if (res != JFileChooser.APPROVE_OPTION) return false;
+
+        selectedFilePath = chooser.getSelectedFile().getAbsolutePath();
+
+        if (!selectedFilePath.endsWith(".xlsx")) {
+            selectedFilePath += ".xlsx";
+        }
+
+        return true;
     }
 
     public int getSheets() {
@@ -86,11 +111,27 @@ public class View extends JPanel implements Observer {
         return Integer.parseInt(colsField.getText());
     }
 
+    public String getSelectedFilePath() {
+        return selectedFilePath;
+    }
+
     @Override
     public void update() {
-        Bip39Model.Result result = model.getResult();
-        resultArea.setText(
-                result.fileInfo() + "\n" + result.information()
-        );
+        Result result = model.getResult();
+
+        String text;
+
+        if (result.success()) {
+            Result.Data data = result.data();
+
+            text = "✅ Success\n\n" +
+                   "File Info:\n" +
+                   (data != null ? data.fileInfo() : "No data");
+        } else {
+            text = "❌ Error\n\n" +
+                   (result.message() != null ? result.message() : "Unknown error");
+        }
+
+        resultArea.setText(text);
     }
 }

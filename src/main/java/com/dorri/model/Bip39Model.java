@@ -5,7 +5,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -33,9 +32,13 @@ public class Bip39Model {
         }
     }
 
-    public void generateExcel(int sheets, int rows, int cols) {
+    public void generateExcel(int sheets, int rows, int cols, String filePath) {
 
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+
+            if (sheets <= 0 || rows <= 0 || cols <= 0) {
+                throw new NumberFormatException("Sheets and rows and cols must be greater than 0");
+            }
 
             SecureRandom random = new SecureRandom();
 
@@ -51,36 +54,28 @@ public class Bip39Model {
                         row.createCell(c).setCellValue(word);
                     }
                 }
-
-                // Optional: auto-size columns (can be slow with many sheets)
-                // for (int c = 0; c < COLS; c++) sheet.autoSizeColumn(c);
             }
 
-            String filename = String.format("bip39-%s(%d_sheets_%dx%d).xlsx",
-                    System.currentTimeMillis(),
-                    sheets,
-                    rows,
-                    cols
-            );
-
-            try (FileOutputStream out = new FileOutputStream(filename)) {
+            try (FileOutputStream out = new FileOutputStream(filePath)) {
                 workbook.write(out);
-                String fileInfo = "File Created: " + filename;
-                String information = "Information: " + sheets + " sheets × " + rows + "×" + cols + " = " +
-                                (sheets * rows * cols) + " random BIP-39 words";
-                this.result = new Result(fileInfo, information);
-                notifyObservers();
+                String information = sheets + " sheets × " + rows + "×" + cols + " = " +
+                                     (sheets * rows * cols) + " random BIP-39 words";
+                this.result = new Result(
+                        new Result.Data(filePath),
+                        true,
+                        information
+                );
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            this.result = new Result(
+                    null,
+                    false,
+                    e.getMessage()
+            );
         }
-    }
-
-    public record Result(
-            String fileInfo,
-            String information
-    ) {
+        notifyObservers();
     }
 
     public Result getResult() {
@@ -99,5 +94,9 @@ public class Bip39Model {
         for (Observer observer : observers) {
             observer.update();
         }
+    }
+
+    public void setResult(Result result) {
+        this.result = result;
     }
 }
