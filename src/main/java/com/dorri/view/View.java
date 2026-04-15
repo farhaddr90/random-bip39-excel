@@ -47,12 +47,18 @@ public class View extends JPanel implements Observer {
         JPanel inputPanel = new JPanel(new GridLayout(3, 2, 5, 5));
         JLabel sheetsLabel = new JLabel("Sheets:");
         this.sheetsField = new JTextField();
+        sheetsField.setEditable(false);
+        sheetsField.setText("30");
 
         JLabel rowsLabel = new JLabel("Rows:");
         this.rowsField = new JTextField();
+        rowsField.setEditable(false);
+        rowsField.setText("30");
 
         JLabel colsLabel = new JLabel("Cols:");
         this.colsField = new JTextField();
+        colsField.setEditable(false);
+        colsField.setText("30");
 
         inputPanel.add(sheetsLabel);
         inputPanel.add(sheetsField);

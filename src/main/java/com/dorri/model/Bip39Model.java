@@ -42,16 +42,18 @@ public class Bip39Model {
 
             SecureRandom random = new SecureRandom();
 
-            for (int s = 1; s <= sheets; s++) {
-                XSSFSheet sheet = workbook.createSheet("Seed " + s);
+            for (int i = 0 ; i < 3; i++) {
+                for (int j = 0 ; j < 10; j++) {
+                    XSSFSheet sheet = workbook.createSheet(String.valueOf(i) + j);
 
-                for (int r = 0; r < rows; r++) {
-                    var row = sheet.createRow(r);
+                    for (int r = 0; r < rows; r++) {
+                        var row = sheet.createRow(r);
 
-                    for (int c = 0; c < cols; c++) {
-                        // Pick random word from the 2048-word list
-                        String word = WORD_LIST.get(random.nextInt(WORD_LIST.size()));
-                        row.createCell(c).setCellValue(word);
+                        for (int c = 0; c < cols; c++) {
+                            // Pick random word from the 2048-word list
+                            String word = WORD_LIST.get(random.nextInt(WORD_LIST.size()));
+                            row.createCell(c).setCellValue(word);
+                        }
                     }
                 }
             }
